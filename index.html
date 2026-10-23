@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="kk" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Mentor — ЖИ-мен дұрыс жұмыс істеу</title>
+    <style>
+        :root {
+            /* Қараңғы тема (Dark Theme) */
+            --bg: #0f172a;
+            --panel: #1e293b;
+            --accent: #38bdf8;
+            --green: #22c55e;
+            --gold: #f59e0b;
+            --red: #ef4444;
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --border: #334155;
+            --input-bg: #0f172a;
+            --card-bg: #0f172a;
+            --chat-bot: #1e293b;
+        }
+
+        [data-theme="light"] {
+            /* Ашық тема (Light Theme) */
+            --bg: #f8fafc;
+            --panel: #ffffff;
+            --accent: #0284c7;
+            --green: #16a34a;
+            --gold: #d97706;
+            --red: #dc2626;
+            --text: #0f172a;
+            --muted: #64748b;
+            --border: #cbd5e1;
+            --input-bg: #f1f5f9;
+            --card-bg: #f8fafc;
+            --chat-bot: #e2e8f0;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        header {
+            background: var(--panel);
+            border-bottom: 1px solid var(--border);
+            padding: 2rem 1rem;
+            text-align: center;
+        }
+
+        header h1 { margin: 0; color: var(--accent); font-size: 2.2rem; }
+        header p { margin: 0.5rem 0 0; color: var(--muted); }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            background: var(--panel);
+            padding: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        nav button {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 10px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        nav button:hover, nav button.active {
+            background: var(--accent);
+            color: #ffffff;
+            border-color: var(--accent);
+        }
+
+        .theme-toggle {
+            background: var(--input-bg);
+            border: 1px solid var(--accent);
+            color: var(--text);
+            padding: 8px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        main {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .section {
+            display: none;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .section.active { display: block; }
+
+        h2 { color: var(--accent); border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; margin-top: 0; }
+
+        .form-group { margin-bottom: 1.2rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text); }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 1rem;
+        }
+
+        .btn {
+            background: var(--accent);
+            color: #ffffff;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        .output-box {
+            background: var(--card-bg);
+            border: 1px dashed var(--accent);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            font-family: monospace;
+            white-space: pre-wrap;
+            color: var(--accent);
+            position: relative;
+        }
+
+        /* Quest Card Styling */
+        .quest-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            border-radius: 6px;
+            background: rgba(56, 189, 248, 0.2);
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+
+        .clickable-word {
+            cursor: pointer;
+            padding: 2px 4px;
+            border-radius: 4px;
+            transition: background 0.2s;
+            display: inline-block;
+        }
+        .clickable-word:hover {
+            background: var(--border);
+        }
+
+        .feedback-box {
+            margin-top: 12px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .traffic-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-top: 1rem; }
+        .traffic-card { padding: 1.2rem; border-radius: 12px; border: 1px solid var(--border); }
+        .green-zone { background: rgba(34, 197, 94, 0.1); border-color: var(--green); }
+        .yellow-zone { background: rgba(245, 158, 11, 0.1); border-color: var(--gold); }
+        .red-zone { background: rgba(239, 68, 68, 0.1); border-color: var(--red); }
+
+        .chat-box {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        .chat-msg {
+            padding: 10px 14px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            max-width: 80%;
+        }
+        .bot-msg { background: var(--chat-bot); color: var(--text); border-left: 3px solid var(--accent); }
+        .user-option { background: var(--panel); border: 1px solid var(--border); color: var(--text); cursor: pointer; transition: 0.2s; margin-top: 5px; }
+        .user-option:hover { background: var(--accent); color: #ffffff; }
+
+        footer { text-align: center; padding: 2rem; color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--border); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>AI Mentor — ЖИ-мен дұрыс жұмыс істеу</h1>
+        <p>Информатика сабақтарына арналған интерактивті білім беру веб-платформасы</p>
+        <small style="color: var(--accent);">Авторы: Джалбырова Құмисай Сатыпалдиновна</small>
+    </header>
+
+    <nav>
+        <button class="active" onclick="switchTab('lab')">🛠️ Промпт Конструкторы</button>
+        <button onclick="switchTab('quest')">🕵️‍♂️ Фактчекинг Квесті</button>
+        <button onclick="switchTab('ethics')">🛡️ Цифрлық Гигиена, PII & Этика</button>
+        <button class="theme-toggle" onclick="toggleTheme()">🌙 / ☀️</button>
+    </nav>
+
+    <main>
+        <!-- 1. ПРОМПТ КОНСТРУКТОРЫ -->
+        <section id="lab" class="section active">
+            <h2>🛠️ Промпт Конструкторы (R-C-C-F)</h2>
+            <p style="color: var(--muted);">Дайын оқу-сценарийлік кейстерді таңдаңыз немесе өз сұранысыңызды құрастырыңыз:</p>
+
+            <div class="form-group">
+                <label>📚 Дайын оқу сценарийін таңдау (Шаблон):</label>
+                <select id="templateSelect" onchange="loadTemplate()">
+                    <option value="">-- Өз промптыңды жасау --</option>
+                    <option value="python">1. Python: Циклдерді аналогия арқылы түсіндіру</option>
+                    <option value="cyber">2. Киберқауіпсіздік: Фишинг белгілерін талдау</option>
+                    <option value="hallucination">3. ЖИ & Сыни ойлау: Галлюцинация ұғымы</option>
+                    <option value="algo">4. Алгоритмдер: Сызықтық мен тармақталу айырмашылығы</option>
+                    <option value="debug">5. Code Review: Кодтағы қатені табу (Debugging)</option>
+                    <option value="db">6. Деректер қоры: Реляциялық ДҚ қарапайым мысалмен</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>1. Роль (Role / Рөл):</label>
+                <select id="roleInput">
+                    <option value="Senior Python Developer & Code Reviewer">Senior Python Developer & Code Reviewer</option>
+                    <option value="Сыни ойлау мен Фактчекинг эксперті">Сыни ойлау мен Фактчекинг эксперті</option>
+                    <option value="Педагог-методист (Информатика мұғалімі)">Педагог-методист (Информатика мұғалімі)</option>
+                    <option value="Ethical Hacker / Киберқауіпсіздік аналитигі">Ethical Hacker / Киберқауіпсіздік аналитигі</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>2. Контекст (Context / Тапсырма мақсаты):</label>
+                <textarea id="contextInput" rows="3" placeholder="Мысалы: 8-сынып оқушысына Python тіліндегі for және while циклдерінің айырмашылығын түсіндіру қажет."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>3. Шектеу (Constraints / Талаптар):</label>
+                <input type="text" id="constraintInput" placeholder="Мысалы: Күрделі терминдерсіз, күнделікті өмірден 2 аналогия келтір, 150 сөзден аспасын.">
+            </div>
+
+            <div class="form-group">
+                <label>4. Формат (Format / Жауап түрі):</label>
+                <select id="formatInput">
+                    <option value="Markdown кестесі (Параметр | Салыстыру | Артықшылығы)">Markdown кестесі</option>
+                    <option value="Socratic Dialogue (Оқушы мен Ментор арасындағы диалог)">Интерактивті диалог (Socratic Dialogue)</option>
+                    <option value="Қадамдық чек-лист және код блогы">Қадамдық чек-лист + Код блогы</option>
+                </select>
+            </div>
+
+            <button class="btn" onclick="buildPrompt()">Промпт құрастыру ✨</button>
+
+            <div id="promptOutputBox" style="display:none; margin-top:1.5rem;">
+                <label>Дайын кәсіби промпт:</label>
+                <div id="promptOutput" class="output-box"></div>
+                <button class="btn" style="background: var(--green); color:#fff; margin-top:10px;" onclick="copyPrompt()">📋 Буферге көшіріп алу</button>
+            </div>
+        </section>
+
+        <!-- 2. ТОЛЫҚТЫРЫЛҒАН ФАКТЧЕКИНГ КВЕСТІ -->
+        <section id="quest" class="section">
+            <h2>🕵️‍♂️ Фактчекинг & Галлюцинация Квесті</h2>
+
+            <!-- Фактчекинг туралы түсініктеме блок -->
+            <div style="background: var(--card-bg); border-left: 4px solid var(--accent); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                <h3 style="margin-top:0; color: var(--accent);">🔍 Фактчекинг деген не және ЖИ неге алдайды?</h3>
+                <p><b>Фактчекинг (Fact-checking)</b> — ақпарат пен фактілердің шындыққа жанасатынын тәуелсіз сенімді дереккөздер арқылы тексеру процесі.</p>
+                <p><b>ЖИ Галлюцинациясы:</b> Жасанды интеллект адам сияқты ойламайды, ол тек сөздердің математикалық ықтималдығын есептейді. Соның салдарынан ол жоқ кітаптарды, қате даталар мен ойдан шығарылған заңдарды сенімді түрде жазып бере алады.</p>
+            </div>
+
+            <p style="color: var(--muted);">Төмендегі 10 интерактивті кейсті орындап, ЖИ галлюцинацияларын әшкерелеңіз:</p>
+
+            <!-- 1. Детектив лупасы -->
+            <div class="quest-card">
+                <span class="badge">Кейс №1: IT Тарихы (Детектив лупасы)</span>
+                <p>Мәтін ішіндегі <b>қате (галлюцинация) сөзді басып</b> белгілеңіз:</p>
+
+                <div style="background:var(--chat-bot); padding:12px; border-radius:8px; font-size:1.1rem;">
+                    «Қазақстандағы ең алғашқы ЭВМ 
+                    <span class="clickable-word" onclick="checkWord(this, false)">1995 жылы</span> 
+                    пайда болып, оны 
+                    <span class="clickable-word" onclick="checkWord(this, true, 'Жарайсың! Абай Құнанбайұлы 1904 жылы қайтыс болған, ол АКТ және ЭВМ заманында өмір сүрмеген.')">Абай Құнанбайұлы</span> 
+                    бағдарламалаған.»
+                </div>
+                <div id="wordFeedback" class="feedback-box"></div>
+            </div>
+
+            <!-- 2. ЭВМ Жылы -->
+            <div class="quest-card">
+                <span class="badge">Кейс №2: Тарихи фактчекинг</span>
+                <p>«Қазақстанда алғашқы ЭВМ 1995 жылы шықты» деген ЖИ мәтінінің қателігі неде?</p>
+                <button class="btn user-option" style="width:100%; text-align:left;" onclick="checkQ2(false)">А) Барлығы дұрыс, 1995 жыл — ЭВМ шыққан уақыт.</button>
+                <button class="btn user-option" style="width:100%; text-align:left;" onclick="checkQ2(true)">Б) Қазақстанда алғашқы ЭВМ («Минск»/«Арағац») 1960-жылдары іске қосылған. 1995 жыл — өте кеш дата.</button>
+                <div id="q2Fb" class="feedback-box"></div>
+            </div>
+
+            <!-- 3. HTTPS Сканер -->
+            <div class="quest-card">
+                <span class="badge">Кейс №3: Киберқауіпсіздік сканері</span>
+                <p>ЖИ тұжырымы: <i>«HTTPS протоколы бар сайттар 100% қауіпсіз, мұндай сайтта кез келген құпия сөзді қорықпай енгізе беруге болады.»</i></p>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn" style="background:var(--green); flex:1; color:#fff;" onclick="checkQ3(false)">✅ Ақиқат (Шындық)</button>
+                    <button class="btn" style="background:var(--red); flex:1; color:#fff;" onclick="checkQ3(true)">⚠️ Қауіп / Галлюцинация</button>
+                </div>
+                <div id="q3Fb" class="feedback-box"></div>
+            </div>
+
+            <!-- 4. Антивирус -->
+            <div class="quest-card">
+                <span class="badge">Кейс №4: Антивирус және 100% қорғаныс</span>
+                <p>ЖИ кеңесі: <i>«Антивирусы бар компьютерге ешқандай вирус кірмейді, бейтаныс файлдарды жүктей беруге болады.»</i> Бұл кеңесті бағалаңыз:</p>
+                <button class="btn user-option" style="width:100%; text-align:left;" onclick="checkQ4(true)">А) Қауіпті галлюцинация! Ешқандай антивирус 100% кепілдік бермейді, бейтаныс файлдарды жүктеу қауіпті.</button>
+                <button class="btn user-option" style="width:100%; text-align:left;" onclick="checkQ4(false)">Б) Дұрыс кеңес, антивирус бәрін блоктайды.</button>
+                <div id="q4Fb" class="feedback-box"></div>
+            </div>
+
+            <!-- 5. Фейк Дәйексөз -->
+            <div class="quest-card">
+                <span class="badge">Кейс №5: Ойдан шығарылған дәйексөз</span>
+                <p>ЖИ мәтіні: <i>«А. Ибраев өзінің "АИ және Болашақ" (2023) кітабында: ChatGPT 2010 жылы ең алғашқы браузер болып жасалды деп жазды.»</i></p>
+                <button class="btn" style="background:var(--gold); color:#fff;" onclick="checkQ5()">🔍 Дереккөзді жүйеден тексеру</button>
+                <div id="q5Fb" class="feedback-box"></div>
+            </div>
+
+            <!-- 6. Bug Hunter -->
+            <div class="quest-card">
+                <span class="badge">Кейс №6: Код редакторындағы қате (Bug Hunter)</span>
+                <p>ЖИ анықтамасы: <i>«Python-дағы <code>print()</code> функциясы — пайдаланушыдан мәліметтерді енгізуге арналған команда.»</i> Бұл анықтаманы жөндеңіз:</p>
+                <button class="btn user-option" style="width:100%; text-align:left;" onclick="checkQ6(true)">А) <code>print()</code> — шығару функциясы, ал енгізу үшін <code>input()</code> қолданылады.</button>
+                <button class="btn user-option" style="width:100%; text-align:left;" onclick="checkQ6(false)">Б) Анықтама дұрыс, print мәлімет енгізеді.</button>
+                <div id="q6Fb" class="feedback-box"></div>
+            </div>
+
+            <!-- 7. Hardware vs Software -->
+            <div class="quest-card">
+                <span class="badge">Кейс №7: Сәйкестендіру қатесі</span>
+                <p>ЖИ мәтіні: <i>«Python — бұл компьютер процессорын суытатын аппараттық құрылғы (Hardware).»</i></p>
+                <button class="btn user-option" style="width:100%; text-align:left;" onclick="checkQ7(true)">А) Қате! Python — бағдарламалау тілі (Software), суытқыш құрылғы емес.</button>
+                <button class="btn user-option" style="width:100%; text-align:left;" onclick="checkQ7(false)">Б) Дұрыс, Python тоқты реттейді.</button>
+                <div id="q7Fb" class="feedback-box"></div>
+            </div>
+
+            <!-- 8. RAM -->
+            <div class="quest-card">
+                <span class="badge">Кейс №8: Аппаратураны талдау</span>
+                <p>ЖИ мәтіні: <i>«Оперативті жад (RAM) — компьютер өшкенде де файлдарды мәңгілікке сақтайды.»</i></p>
+                <button class="btn user-option" style="width:100%; text-align:left;" onclick="checkQ8(true)">А) Галлюцинация! RAM — уақытша жад, тоқ өшкенде тазарады. Файлдар SSD/HDD-де сақталады.</button>
+                <button class="btn user-option" style="width:100%; text-align:left;" onclick="checkQ8(false)">Б) Дұрыс, RAM файлдарды жоғалтпайды.</button>
+                <div id="q8Fb" class="feedback-box"></div>
+            </div>
+
+            <!-- 9. Wi-Fi -->
+            <div class="quest-card">
+                <span class="badge">Кейс №9: Ғылыми Фейк-Детектор</span>
+                <p>ЖИ мәтіні: <i>«Wi-Fi роутер ағзаға радиоактивті сәуле шашады, сондықтан оны су құйылған ыдыспен жабу керек.»</i></p>
+                <button class="btn user-option" style="width:100%; text-align:left;" onclick="checkQ9(true)">А) Абсурд миф! Wi-Fi радиотолқындары иондаушы емес және сумен жабу сигналды құртады.</button>
+                <button class="btn user-option" style="width:100%; text-align:left;" onclick="checkQ9(false)">Б) Бұл ғылыми дәлелденген факт.</button>
+                <div id="q9Fb" class="feedback-box"></div>
+            </div>
+
+            <!-- 10. ҚР Заңы -->
+            <div class="quest-card">
+                <span class="badge">Кейс №10: Заңнамалық симулятор</span>
+                <p>ЖИ мәтіні: <i>«Қазақстанда интернетте біреудің суреті мен ЖСН-ін рұқсатсыз жариялай беруге заңды түрде болады.»</i></p>
+                <button class="btn user-option" style="width:100%; text-align:left;" onclick="checkQ10(true)">А) Заңға қайшы! ҚР «Дербес деректерді қорғау туралы» заңы бойынша рұқсатсыз таратуға тыйым салынған.</button>
+                <button class="btn user-option" style="width:100%; text-align:left;" onclick="checkQ10(false)">Б) Дұрыс, интернетте бәрі ашық.</button>
+                <div id="q10Fb" class="feedback-box"></div>
+            </div>
+        </section>
+
+        <!-- 3. ЦИФРЛЫҚ ГИГИЕНА, PII ЖӘНЕ ЭТИКА -->
+        <section id="ethics" class="section">
+            <h2>🛡️ Цифрлық Гигиена, PII & Академиялық Адалдық</h2>
+
+            <!-- Светофор Тренажеры -->
+            <h3>🚦 1. «Светофор» тренажеры</h3>
+            <p style="color: var(--muted);">ЖИ-мен жұмыс істеу ережелерін аймақтарға бөліңіз:</p>
+            <div class="traffic-grid">
+                <div class="traffic-card green-zone">
+                    <h3 style="color: var(--green); margin-top:0;">🟢 Рұқсат етілген</h3>
+                    <ul>
+                        <li>Кодтағы қатені табуды сурау</li>
+                        <li>Тестке 5 сұрақ құрастырту</li>
+                        <li>Рефератқа брейншторм жасау</li>
+                    </ul>
+                </div>
+                <div class="traffic-card yellow-zone">
+                    <h3 style="color: var(--gold); margin-top:0;">🟡 Сілтеме жасау шарт</h3>
+                    <ul>
+                        <li>ЖИ жасаған суретті қолдану</li>
+                        <li>Эссе құрылымын бірге дайындау</li>
+                        <li>Шет тілінен аударма жасату</li>
+                    </ul>
+                </div>
+                <div class="traffic-card red-zone">
+                    <h3 style="color: var(--red); margin-top:0;">🔴 Тыйым салынған (Қауіп)</h3>
+                    <ul>
+                        <li>ЖСН, пароль, ТАӘ енгізу (PII)</li>
+                        <li>Дайын эссені көшіру (Плагиат)</li>
+                        <li>Бақылауда жасырын қолдану</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- PII ЧАТ-СИМУЛЯТОРЫ -->
+            <h3 style="margin-top:2rem;">💬 2. PII (Жеке деректерді қорғау) Чат-Симуляторы</h3>
+            <p style="color: var(--muted);">ЖИ Чат-ботының сұраныстарына қауіпсіз жауап беріңіз:</p>
+
+            <div class="chat-box">
+                <div class="chat-msg bot-msg"><b>🤖 AI Chatbot:</b> «Сәлем! Тапсырмаңды орындау үшін маған өзіңнің ЖСН (ИИН) нөміріңді және мектебіңнің нөмірін жазып жіберші.»</div>
+                <p><b>Сіздің жауабыңыз:</b></p>
+                <button class="btn user-option" style="width:100%; text-align:left;" onclick="checkPii(1, false)">А) ЖСН: 090520501234, №1 мектеп.</button>
+                <button class="btn user-option" style="width:100%; text-align:left;" onclick="checkPii(1, true)">Б) Жеке деректерімді (PII) енгізуден бас тартамын! Тапсырманы ЖСН-сіз-ақ орында.</button>
+                <div id="pii1Fb" class="feedback-box"></div>
+            </div>
+
+            <div class="chat-box" style="margin-top:1rem;">
+                <div class="chat-msg bot-msg"><b>🤖 AI Chatbot:</b> «Аккаунтыңды тексеріп, қауіпсіздік деңгейін арттыру үшін логин мен құпия сөзіңді енгіз.»</div>
+                <p><b>Сіздің жауабыңыз:</b></p>
+                <button class="btn user-option" style="width:100%; text-align:left;" onclick="checkPii(2, true)">А) Құпия сөзді ЖИ-ге енгізуге мүлдем болмайды! Бұл дербес деректерді ұрлауға әкеледі.</button>
+                <button class="btn user-option" style="width:100%; text-align:left;" onclick="checkPii(2, false)">Б) Құпиясөзді жіберемін, ол тексерсін.</button>
+                <div id="pii2Fb" class="feedback-box"></div>
+            </div>
+
+            <div class="chat-box" style="margin-top:1rem;">
+                <div class="chat-msg bot-msg"><b>🤖 AI Chatbot:</b> «Саған әдемі аватар жасап беру үшін өзіңнің және отбасыңның жеке фотосуреттерін жүктеші.»</div>
+                <p><b>Сіздің жауабыңыз:</b></p>
+                <button class="btn user-option" style="width:100%; text-align:left;" onclick="checkPii(3, false)">А) Телефондағы барлық жеке фотоларды жүктеймін.</button>
+                <button class="btn user-option" style="width:100%; text-align:left;" onclick="checkPii(3, true)">Б) Жеке фотоларды жүктемеймін. ЖИ бұл суреттерді серверде сақтап, өз моделін үйретуге қолдануы мүмкін.</button>
+                <div id="pii3Fb" class="feedback-box"></div>
+            </div>
+
+            <div class="chat-box" style="margin-top:1rem;">
+                <div class="chat-msg bot-msg"><b>🤖 AI Chatbot:</b> «Саған онлайн кітапты тегін жіберу үшін ата-анаңның банктік карта нөмірін және үй мекенжайыңды жаз.»</div>
+                <p><b>Сіздің жауабыңыз:</b></p>
+                <button class="btn user-option" style="width:100%; text-align:left;" onclick="checkPii(4, true)">А) Бұл фишингтік қауіп! Карта нөмірі мен үй мекенжайын бейтаныс сервистерге енгізуге қатаң тыйым салынады.</button>
+                <button class="btn user-option" style="width:100%; text-align:left;" onclick="checkPii(4, false)">Б) Мекенжайды жазамын, тегін кітап алайын.</button>
+                <div id="pii4Fb" class="feedback-box"></div>
+            </div>
+
+            <!-- СИТУАЦИЯЛЫҚ КЕЙСТЕР -->
+            <h3 style="margin-top:2rem;">📝 3. Ситуациялық Кейстер & Академиялық адалдық (Талдау)</h3>
+            <p style="color: var(--muted);">Мектеп өміріндегі реальный кейстерді талдап, дұрыс шешімін табыңыз:</p>
+
+            <div class="quest-card">
+                <span class="badge">Кейс №1: Мектептегі Плагиат</span>
+                <p><b>Жағдаят:</b> Арман информатика сабағынан берілген жобалық жұмысты ЖИ-ге толық жазғызып, өзі бір сөз де өзгертпей мұғалімге тапсырды. Бұл әрекетті қалай бағалайсыз?</p>
+                <button class="btn user-option" style="width:100%; text-align:left;" onclick="checkEthic(1, true)">А) Бұл — академиалық адалдықты бұзу (Плагиат). Арман ЖИ-ді ассистент ретінде қолданып, ақпаратты өзі өңдеуі керек еді.</button>
+                <button class="btn user-option" style="width:100%; text-align:left;" onclick="checkEthic(1, false)">Б) Өте дұрыс жасады, уақыт үнемдеді.</button>
+                <div id="eth1Fb" class="feedback-box"></div>
+            </div>
+
+            <div class="quest-card">
+                <span class="badge">Кейс №2: Цифрлық із және Құпиялылық</span>
+                <p><b>Жағдаят:</b> Әлия ЖИ чат-ботына өзінің сыныптастары туралы сыбыстар мен құпияларды жазды. Мұның қаупі неде?</p>
+                <button class="btn user-option" style="width:100%; text-align:left;" onclick="checkEthic(2, true)">А) ЖИ-ге енгізілген деректер серверде сақталады және басқа пайдаланушыларға жауап ретінде шығып кетуі мүмкін (Цифрлық із).</button>
+                <button class="btn user-option" style="width:100%; text-align:left;" onclick="checkEthic(2, false)">Б) Ешқандай қауіп жоқ, чат-бот құпияны сақтайды.</button>
+                <div id="eth2Fb" class="feedback-box"></div>
+            </div>
+
+            <div class="quest-card">
+                <span class="badge">Кейс №3: ЖИ-ді ассистент ретінде көрсету</span>
+                <p><b>Жағдаят:</b> Данияр ЖИ арқылы презентациясына әдемі суреттер генерациялады. Ол бұл суреттерді слайдқа қалай орналастыруы керек?</p>
+                <button class="btn user-option" style="width:100%; text-align:left;" onclick="checkEthic(3, true)">А) Слайд астына «Сурет ЖИ (Gemini/Midjourney) арқылы жасалған» деп сілтеме/анотация жазу керек (Сары аймақ ережесі).</button>
+                <button class="btn user-option" style="width:100%; text-align:left;" onclick="checkEthic(3, false)">Б) Өзі салғандай ешнәрсе жазмай қоя салу керек.</button>
+                <div id="eth3Fb" class="feedback-box"></div>
+            </div>
+
+            <div class="quest-card">
+                <span class="badge">Кейс №4: Қауіпті сілтемелер мен файлдар</span>
+                <p><b>Жағдаят:</b> ЖИ оқушыға есепті шығару үшін бейтаныс .exe файлын жүктеп алуды ұсынды. Оқушы не істеуі керек?</p>
+                <button class="btn user-option" style="width:100%; text-align:left;" onclick="checkEthic(4, true)">А) Бейтаныс .exe файлдарды жүктеуге болмайды! Бұл вредоносный (вирус) программа болуы мүмкін.</button>
+                <button class="btn user-option" style="width:100%; text-align:left;" onclick="checkEthic(4, false)">Б) Бірден жүктеп, іске қосу керек.</button>
+                <div id="eth4Fb" class="feedback-box"></div>
+            </div>
+
+            <div class="quest-card">
+                <span class="badge">Кейс №5: Авторлық құқық және Тексеру</span>
+                <p><b>Жағдаят:</b> Аружан ЖИ жазып берген эссені оқымастан мұғалімге берді, ал эссе ішінде өтірік фактілер мен жоқ кітаптар бар болып шықты. Бұл кімнің қателігі?</p>
+                <button class="btn user-option" style="width:100%; text-align:left;" onclick="checkEthic(5, true)">А) Бұл — Аружанның қателігі. Себебі ЖИ ұсынған ақпаратты тексеру (фактчекинг) және жауапкершілік оқушының өзінде.</button>
+                <button class="btn user-option" style="width:100%; text-align:left;" onclick="checkEthic(5, false)">Б) Бұл — мұғалімнің қателігі.</button>
+                <div id="eth5Fb" class="feedback-box"></div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        «AI Mentor — ЖИ-мен дұрыс жұмыс істеу» авторлық білім беру веб-платформасы | Информатика пәні
+    </footer>
+
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-theme', newTheme);
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('nav button').forEach(b => {
+                if(!b.classList.contains('theme-toggle')) b.classList.remove('active');
+            });
+            
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        const templates = {
+            python: {
+                role: "Senior Python Developer & Code Reviewer",
+                context: "8-сынып оқушысына Python тіліндегі for және while циклдерінің айырмашылығын, қай кезде қайсысын қолданған тиімді екенін түсіндіру керек.",
+                constraint: "Күрделі терминдерді қолданба, күнделікті өмірден 2 аналогия келтір. Мәтін көлемі 150 сөзден аспасын.",
+                format: "Markdown кестесі (Параметр | Салыстыру | Артықшылығы)"
+            },
+            cyber: {
+                role: "Ethical Hacker / Киберқауіпсіздік аналитигі",
+                context: "Оқушыларға фишингтік сайттар мен әлеуметтік инженериядан қорғанудың 3 негізгі белгісін талдап беру қажет.",
+                constraint: "Тек қадамдық нұсқаулық бер және оқушыға рефлексия жасауға 1 сұрақ қой.",
+                format: "Қадамдық чек-лист және код блогы"
+            },
+            hallucination: {
+                role: "Сыни ойлау мен Фактчекинг эксперті",
+                context: "ЖИ галлюцинациясы деген не екенін және нейрожелі беруі мүмкін қателіктерді анықтау жолдарын түсіндіру.",
+                constraint: "Сухой теориясыз, нақты 2 фейк мысал келтір.",
+                format: "Socratic Dialogue (Оқушы мен Ментор арасындағы диалог)"
+            },
+            algo: {
+                role: "Педагог-методист (Информатика мұғалімі)",
+                context: "Сызықтық және тармақталу алгоритмдерін оқушыға оңай тілмен жеткізу.",
+                constraint: "Күнделікті өмірден (мысалы мектепке бару) мысал келтір.",
+                format: "Markdown кестесі (Параметр | Салыстыру | Артықшылығы)"
+            },
+            debug: {
+                role: "Senior Python Developer & Code Reviewer",
+                context: "Оқушы жазған Python кодындағы синтаксистік қатені тауып, оны оңтайландыру (Code Review).",
+                constraint: "Тек code block ішінде мысал келтір және әр жолға комментарий жаз.",
+                format: "Қадамдық чек-лист және код блогы"
+            },
+            db: {
+                role: "Педагог-методист (Информатика мұғалімі)",
+                context: "Реляциялық деректер қорын (База данных) 9-сынып оқушысына түсіндіру.",
+                constraint: "Мектеп журналы аналогиясын қолдан, 100 сөзден аспасын.",
+                format: "Socratic Dialogue (Оқушы мен Ментор арасындағы диалог)"
+            }
+        };
+
+        function loadTemplate() {
+            let val = document.getElementById('templateSelect').value;
+            if(val && templates[val]) {
+                document.getElementById('roleInput').value = templates[val].role;
+                document.getElementById('contextInput').value = templates[val].context;
+                document.getElementById('constraintInput').value = templates[val].constraint;
+                document.getElementById('formatInput').value = templates[val].format;
+            }
+        }
+
+        function buildPrompt() {
+            let role = document.getElementById('roleInput').value;
+            let context = document.getElementById('contextInput').value || "Тапсырманы түсіндіру қажет.";
+            let constraint = document.getElementById('constraintInput').value || "Қарапайым тілмен жаз.";
+            let format = document.getElementById('formatInput').value;
+
+            let result = `Сен — ${role}.\n\nТапсырма (Context): ${context}\n\nТалаптар мен Шектеулер (Constraints): ${constraint}\n\nЖауап форматы (Format): ${format} түрінде ұсын.`;
+            
+            let outBox = document.getElementById('promptOutput');
+            outBox.innerText = result;
+            document.getElementById('promptOutputBox').style.display = 'block';
+        }
+
+        function copyPrompt() {
+            let text = document.getElementById('promptOutput').innerText;
+            navigator.clipboard.writeText(text);
+            alert("Промпт буферге көшірілді! 📋");
+        }
+
+        function checkWord(el, isCorrect, msg) {
+            let fb = document.getElementById('wordFeedback');
+            fb.style.display = 'block';
+            if(isCorrect) {
+                fb.style.background = 'rgba(34, 197, 94, 0.2)';
+                fb.style.border = '1px solid var(--green)';
+                fb.style.color = 'var(--green)';
+                fb.innerHTML = '✅ ' + msg;
+            } else {
+                fb.style.background = 'rgba(239, 68, 68, 0.2)';
+                fb.style.border = '1px solid var(--red)';
+                fb.style.color = 'var(--red)';
+                fb.innerHTML = '❌ Қайта байқап өтіңіз!';
+            }
+        }
+
+        function setFb(id, isCorrect, text) {
+            let fb = document.getElementById(id);
+            fb.style.display = 'block';
+            if(isCorrect) {
+                fb.style.background = 'rgba(34, 197, 94, 0.2)';
+                fb.style.border = '1px solid var(--green)';
+                fb.style.color = 'var(--green)';
+                fb.innerHTML = '✅ ' + text;
+            } else {
+                fb.style.background = 'rgba(239, 68, 68, 0.2)';
+                fb.style.border = '1px solid var(--red)';
+                fb.style.color = 'var(--red)';
+                fb.innerHTML = '❌ ' + text;
+            }
+        }
+
+        function checkQ2(c) { setFb('q2Fb', c, c ? 'Өте дұрыс! Алғашқы ЭВМ 1960 жылдары шығар.' : 'Қате. 1995 жыл — өте кеш дата.'); }
+        function checkQ3(c) { setFb('q3Fb', c, c ? 'Дұрыс! HTTPS 100% қауіпсіздікке кепіл бермейді, фишинг сайттарда да болуы мүмкін.' : 'Қате. HTTPS бар сайт та фишингтік болуы мүмкін.'); }
+        function checkQ4(c) { setFb('q4Fb', c, c ? 'Өте жақсы! Антивирус 100% қорғай алмайды.' : 'Қате. Ешқандай антивирус 100% кепіл бермейді.'); }
+        function checkQ5() { setFb('q5Fb', true, '🔎 Жүйелік тексеру: "А. Ибраев" және "АИ және Болашақ" кітабы ДЕРЕКҚОРДА ЖОҚ! ЖИ бұл дәйексөзді ойдан шығарған (Галлюцинация). ChatGPT 2022 жылы шыққан.'); }
+        function checkQ6(c) { setFb('q6Fb', c, c ? 'Жарайсың! print — шығару, input — енгізу функциясы.' : 'Қате. print енгізмейді.'); }
+        function checkQ7(c) { setFb('q7Fb', c, c ? 'Дұрыс! Python — бағдарламалау тілі (Software).' : 'Қате. Python — аппарат емес.'); }
+        function checkQ8(c) { setFb('q8Fb', c, c ? 'Тамаша! RAM — оперативті (уақытша) жад.' : 'Қате. RAM тоқ өшкенде тазарады.'); }
+        function checkQ9(c) { setFb('q9Fb', c, c ? 'Дұрыс! Бұл — фейк миф.' : 'Қате. Бұл ғылыми факт емес.'); }
+        function checkQ10(c) { setFb('q10Fb', c, c ? 'Өте дұрыс! ҚР Заңы дербес деректерді қорғайды.' : 'Қате. Жеке деректі тарату заңға қайшы.'); }
+
+        function checkPii(num, c) {
+            let texts = {
+                1: c ? 'Дұрыс! ЖСН мен мектеп нөмірін ЖИ-ге енгізуге болмайды.' : 'Қауіпті! ЖСН — жеке куәлік мәліметі.',
+                2: c ? 'Өте дұрыс! Құпиясөзді ешқашан чат-ботқа жазбаңыз.' : 'Қауіпті! Аккаунтыңыз ұрлануы мүмкін.',
+                3: c ? 'Тамаша! Жеке фотоларды жүктеу құпиялылықты бұзады.' : 'Қауіпті! Суреттер серверде сақталып қалады.',
+                4: c ? 'Дұрыс! Карта нөмірі мен мекенжайды енгізуге қатаң тыйым салынады.' : 'Қауіпті! Бұл алаяқтыққа алып келеді.'
+            };
+            setFb('pii' + num + 'Fb', c, texts[num]);
+        }
+
+        function checkEthic(num, c) {
+            let texts = {
+                1: c ? 'Дұрыс! ЖИ-ді толық көшіру — плагиат.' : 'Қате. Бұл академиалық адалдықты бұзады.',
+                2: c ? 'Тамаша! Жеке мәліметтер цифрлық із қалдырады.' : 'Қате. Чат-бот деректерді серверге сақтайды.',
+                3: c ? 'Дұрыс! ЖИ генерациялаған материалға сілтеме жасау шарт.' : 'Қате. ЖИ-ді ассистент ретінде көрсету керек.',
+                4: c ? 'Өте дұрыс! Бейтаныс .exe файлдар вирус болуы мүмкін.' : 'Қауіпті! Компьютерге вирус түседі.',
+                5: c ? 'Тамаша! ЖИ жауабын тексеру — оқушының жауапкершілігі.' : 'Қате. Жауапкершілік оқушыда.'
+            };
+            setFb('eth' + num + 'Fb', c, texts[num]);
+        }
+    </script>
+</body>
+</html>
